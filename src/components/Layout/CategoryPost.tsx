@@ -1,10 +1,8 @@
-import React , { useState, useEffect, useContext } from 'react';
-import PostContext from '../PostContext';
+import React , { useState, useEffect } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { Posts } from '../Types/posts';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
 import { makeStyles } from '@material-ui/core/styles';
 import { Theme  } from "@material-ui/core";
 import Container from '@material-ui/core/Container';
@@ -64,95 +62,51 @@ const useStyles = makeStyles((theme:Theme) => ({
   },
 }));
 
-interface  PostId  {
-  id: string;
+interface  UserId  {
+  uId: string;
 }
 
-interface PostDetailsState {
-  body: string;
-  email: string;
-  name: string;
-  id: string;
-  postId: string;
-}
-
+//Defining static categories or user id and searching on the basis of them.
 const users = ['1','2','3','4','5','6','7','8','9'];
 
 
-interface Props extends Posts , RouteComponentProps<PostId> { }
+interface Props extends Posts , RouteComponentProps<UserId> { }
 
-const SinglePost: React.FC<Props> = ({ match }: RouteComponentProps<PostId>) =>{
+const CategoryPost: React.FC<Props> = ({ match }: RouteComponentProps<UserId>) =>{
 
   const classes = useStyles({});
 
-  const dataList = useContext(PostContext);
-  const urlId  = match.params.id;
-  let userId, id, title , body;
-
-  const [details, setDetails] = useState<Service<PostDetailsState>>({
+  const user_id  = match.params.uId;
+  const [details, setDetails] = useState<Service<Posts>>({
     status: 'init'
   });
 
   useEffect(() => {
-    fetch(`https://jsonplaceholder.typicode.com/comments?postId=${urlId}`)
+    fetch(`https://jsonplaceholder.typicode.com/posts?userId=${user_id}`)
     .then(response=> response.json())
     .then(response => setDetails({status: 'loaded', payload: response}))
     .catch(error => setDetails({ status: 'error', error }))
-  },[urlId]);
+  },[user_id]);
 
-  //Reading the data from the context and not calling the API again with the ID.
-  if(dataList.status!=='loaded'){
-    userId=''; 
-    id=''; 
-    title='';
-    body='';
-  }else{
-    let postData = dataList.payload.find(item => (item.id == urlId)); // Searching for the id in the context response
-    userId=postData.userId;
-    id=postData.id;
-    title=postData.title
-    body=postData.body;
-  }
+
       return(
         <div>
           <Container maxWidth="lg">
-          <Paper className={classes.mainFeaturedPost}>
-              {
-                <img
-                  style={{ display: 'none' }}
-                  src="https://source.unsplash.com/user/erondu"
-                  alt="background"
-                />
-              }
-              <div className={classes.overlay} />
-              <Grid container>
-                <Grid item md={6}>
-                  <div className={classes.mainFeaturedPostContent}>
-                    <Typography component="h1" variant="h3" color="inherit" gutterBottom>
-                      {title}
-                    </Typography>
-                  </div>
-                </Grid>
-              </Grid>
-            </Paper>
             { details.status==='loaded' && <Grid container spacing={5} className={classes.mainGrid}>
             <Grid item xs={12} md={8}>
               <Typography variant="h6" gutterBottom>
-                From the Firehose for the category(user) : {userId} and Post ID : {id}
+                For the Category(UserId) : {user_id}
               </Typography>
               <Divider />
-              <Typography variant="h5" color="inherit" paragraph>
-                      {body}
-              </Typography>
               {details.payload.map(item => (
                 
-                <List className={classes.root} key={item.id}>
+                <List className={classes.root}>
                   <ListItem alignItems="flex-start">
                     <ListItemAvatar>
                       <AccountCircleIcon fontSize="large"/>
                     </ListItemAvatar>
                     <ListItemText
-                      primary={item.email}
+                      primary={item.userId}
                       secondary={
                         <React.Fragment>
                           <Typography
@@ -161,9 +115,11 @@ const SinglePost: React.FC<Props> = ({ match }: RouteComponentProps<PostId>) =>{
                             className={classes.inline}
                             color="textPrimary"
                           >
-                            { item.email }
+                            { item.title }
                           </Typography>
-                          { item.body}
+                          <Typography>
+                            { item.body}
+                          </Typography>
                         </React.Fragment>
                       }
                     />
@@ -187,4 +143,4 @@ const SinglePost: React.FC<Props> = ({ match }: RouteComponentProps<PostId>) =>{
       );
 };
 
-export default SinglePost;
+export default CategoryPost;
